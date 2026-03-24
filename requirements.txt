@@ -1,0 +1,17 @@
+# The Oracle — Arduino App Lab dependencies
+# Install: pip install -r requirements.txt
+#
+# NOTE: llama-cpp-python compiles from source on first install.
+# On the Arduino UNO Q (aarch64 Linux) this may take ~10 minutes.
+#
+# For Metal GPU acceleration (macOS):
+#   CMAKE_ARGS="-DGGML_METAL=on" pip install llama-cpp-python --force-reinstall
+#
+# For CUDA GPU acceleration:
+#   CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --force-reinstall
+#
+# For Qualcomm Adreno GPU (UNO Q, experimental):
+#   CMAKE_ARGS="-DGGML_OPENCL=on" pip install llama-cpp-python --force-reinstall
+
+flask>=3.0.0
+llama-cpp-python>=0.2.50

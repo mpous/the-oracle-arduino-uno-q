@@ -1,0 +1,5 @@
+name: The Oracle
+description: "Matrix-themed LLM oracle chat powered by llama.cpp + SmolLM2-135M"
+icon: "🔮"
+ports: [5001]
+bricks: []
