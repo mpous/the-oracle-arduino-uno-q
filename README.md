@@ -1,4 +1,4 @@
-# 🟢 The Oracle — Matrix-Themed LLM Chat
+# The Oracle — Matrix-Themed LLM Chat with Arduino UNO Q
 
 A self-hosted, Matrix-themed chat interface powered by **llama.cpp** with a small local LLM.
 The Oracle answers only **2 questions** per session — choose wisely.
@@ -35,33 +35,16 @@ The Oracle answers only **2 questions** per session — choose wisely.
 
 ## Quick Start
 
-### 1. Install dependencies
+SETUP (on Arduino UNO Q):
 
-```bash
-pip install -r requirements.txt
-```
+  1. python3 -m venv .venv && source .venv/bin/activate
+  2. pip install -r requirements.txt
+  3. python download_model.py          # downloads SmolLM2-135M
+  4. python main.py                    # starts on port 5001
 
-### 2. Download a model
+ACCESS:
 
-```bash
-python download_model.py
-```
-
-Recommended: **SmolLM2-360M-Instruct** (~230MB, fast on any CPU)
-
-### 3. Run The Oracle
-
-```bash
-# With LLM model:
-python oracle_server.py --model ./models/smollm2-360m-instruct.Q4_K_M.gguf
-
-# Without a model (pre-baked responses for testing):
-python oracle_server.py --fallback
-```
-
-### 4. Open in browser
-
-Navigate to **http://localhost:8080**
+  http://<device-ip>:5001
 
 ## Command Reference
 
