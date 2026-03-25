@@ -1,5 +1,5 @@
 name: The Arduino Oracle
-description: "Matrix-themed LLM oracle chat powered by llama.cpp + SmolLM2-135M"
+description: "Arduino Oracle with a Matrix-themed LLM oracle chat powered by Edge Impulse keyword spotting and llama.cpp with SmolLM2-135M model"
 icon: "🔮"
 ports: [5001]
 bricks:
