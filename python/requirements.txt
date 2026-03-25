@@ -1,0 +1,15 @@
+# The Oracle — Arduino App Lab dependencies
+#
+# llama-cpp-python is NOT listed here — the App Lab Docker build environment
+# has no C compiler, so uv cannot compile it from source.
+#
+# After the app first starts successfully (FallbackEngine mode), install
+# LLM support once via SSH:
+#
+#   ssh arduino@<board>.local
+#   sudo apt-get install -y build-essential cmake
+#   cd /home/arduino/ArduinoApps/<app-name>
+#   .cache/.venv/bin/pip install llama-cpp-python==0.3.8
+#   # then restart the app in App Lab
+
+flask>=3.0.0
