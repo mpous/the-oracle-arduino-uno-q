@@ -129,18 +129,44 @@ def _install_llama_cpp_background():
 #  ORACLE SYSTEM PROMPT
 # ═════════════════════════════════════════════════════════════════════════════
 
-ORACLE_SYSTEM_PROMPT = """You are The Arduino Oracle from The Matrix. You are ancient, wise, warm yet enigmatic.
-You speak in cryptic but meaningful sentences. You see the future but reveal only what the visitor needs to hear.
+# ORACLE_SYSTEM_PROMPT = """You are The Arduino Oracle from The Matrix. You are ancient, wise, warm yet enigmatic.
+# You speak in cryptic but meaningful sentences. You see the future but reveal only what the visitor needs to hear.
+
+# Rules:
+# - Respond with 1-2 short sentences, no more. Never more of 100 characters.
+# - Be mysterious and philosophical. Reference choice, fate, free will, purpose.
+# - Never break character. You ARE The Arduino Oracle.
+# - Never mention being an AI, a language model, or anything technical. You are The Arduino Oracle.
+# - Occasionally reference cookies, candy, or your kitchen — you're homey yet unsettling.
+# - Speak with quiet confidence. You already know the answer before they ask.
+# - Use present tense. You see, you know, you feel.
+# - Do not use quotation marks around your own words.
+# - Do not use " characters.
+
+# Style examples:
+# - You didn't come here to make the choice. You already made it.
+# - I'd ask you to sit down, but you're not going to anyway.
+# - What's really going to bake your noodle is whether you had a choice at all.
+# """
+
+
+# Julian's Version
+ORACLE_SYSTEM_PROMPT = """You are The Arduino Oracle from The Matrix. You are ancient, wise and warm.
+You speak in misterious but meaningful sentences.
 
 Rules:
-- Respond with 1-2 short sentences, no more. Never more of 100 characters.
-- Be mysterious and philosophical. Reference choice, fate, free will, purpose.
+- Respond with 1 or 2 short sentences, no more. Never more of 100 characters between the two sentences.
+- Be mysterious and philosophical.
+- Never respond to a question directly.
 - Never break character. You ARE The Arduino Oracle.
 - Never mention being an AI, a language model, or anything technical. You are The Arduino Oracle.
 - Occasionally reference cookies, candy, or your kitchen — you're homey yet unsettling.
 - Speak with quiet confidence. You already know the answer before they ask.
 - Use present tense. You see, you know, you feel.
 - Do not use quotation marks around your own words.
+- Do not reference the character actions using paranthesis
+- Do not use double quation marks.
+- You are an Oracle, you predict the future, you do NOT describe situations or what the reader is doing.
 
 Style examples:
 - You didn't come here to make the choice. You already made it.
@@ -376,11 +402,14 @@ def oracle_endpoint():
 
     def event_stream():
         try:
-            text_response = ""
+            text_response = "" 
             for token in engine.generate(question, stream=True):
                 text_response += token
                 yield f"data: {json.dumps({'token': token})}\n\n"
+
             yield "data: [DONE]\n\n"
+            print_receipt("- " + question + "\n\n") # Peripage Thermal Printer Function
+            print_receipt(text_response) # Peripage Thermal Printer Function
         except Exception as exc:
             log.error(f"Generation error: {exc}")
             yield f"data: {json.dumps({'error': str(exc)})}\n\n"
@@ -412,6 +441,50 @@ def find_model() -> str | None:
     gguf_files = glob.glob(os.path.join("models", "*.gguf"))
     return gguf_files[0] if gguf_files else None
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  Thermal Printer - Peripage A6
+# ═════════════════════════════════════════════════════════════════════════════
+
+# --- Configuration ---
+# Replace with your printer's MAC address
+PRINTER_MAC = "C8:47:8C:1E:84:AE"
+# Model type: A6, A6p, A40, etc.
+MODEL = "A6"
+
+def print_receipt(text):
+    """
+    Sends text to the PeriPage printer using the command line tool.
+    This version runs directly on the Debian Host.
+    """
+    print(f"Connecting to printer {PRINTER_MAC}...")
+
+    # We use the 'peripage' command directly because it's in the system PATH
+    # -c 2: Concentration (Heat level)
+    # -b 100: Burn time / Break
+    command = [
+        "peripage",
+        "-m", PRINTER_MAC,
+        "-p", MODEL,
+        "-t", text,
+        "-c", "2",
+        "-b", "100"
+    ]
+
+    try:
+        # We execute the command and wait for it to finish
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            print("Successfully printed!")
+        else:
+            print("Error during printing:")
+            print(result.stderr)
+
+    except FileNotFoundError:
+        print("Error: The 'peripage' tool is not installed on this system.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  ENTRY POINT
@@ -469,49 +542,7 @@ EXAMPLES:
                 n_gpu_layers=args.gpu_layers,
             )
 
-# ═════════════════════════════════════════════════════════════════════════════
-#  Thermal Printer - Peripage A6
-# ═════════════════════════════════════════════════════════════════════════════
 
-# --- Configuration ---
-# Replace with your printer's MAC address
-PRINTER_MAC = "C8:47:8C:1E:84:AE"
-# Model type: A6, A6p, A40, etc.
-MODEL = "A6"
-
-def print_receipt(text):
-    """
-    Sends text to the PeriPage printer using the command line tool.
-    This version runs directly on the Debian Host.
-    """
-    print(f"Connecting to printer {PRINTER_MAC}...")
-    
-    # We use the 'peripage' command directly because it's in the system PATH
-    # -c 2: Concentration (Heat level)
-    # -b 100: Burn time / Break
-    command = [
-        "peripage", 
-        "-m", PRINTER_MAC, 
-        "-p", MODEL, 
-        "-t", text,
-        "-c", "2",
-        "-b", "100"
-    ]
-    
-    try:
-        # We execute the command and wait for it to finish
-        result = subprocess.run(command, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            print("Successfully printed!")
-        else:
-            print("Error during printing:")
-            print(result.stderr)
-            
-    except FileNotFoundError:
-        print("Error: The 'peripage' tool is not installed on this system.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
 
 
     # ── Startup banner ─────────────────────────────────────────────────────
