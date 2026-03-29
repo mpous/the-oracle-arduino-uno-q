@@ -32,6 +32,7 @@ ACCESS:
 
 import argparse
 import json
+import time
 import os
 import sys
 import glob
@@ -40,6 +41,8 @@ import subprocess
 import threading
 import queue as _queue
 from pathlib import Path
+
+import subprocess
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -373,7 +376,9 @@ def oracle_endpoint():
 
     def event_stream():
         try:
+            text_response = ""
             for token in engine.generate(question, stream=True):
+                text_response += token
                 yield f"data: {json.dumps({'token': token})}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as exc:
@@ -463,6 +468,51 @@ EXAMPLES:
                 n_threads=args.threads,
                 n_gpu_layers=args.gpu_layers,
             )
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  Thermal Printer - Peripage A6
+# ═════════════════════════════════════════════════════════════════════════════
+
+# --- Configuration ---
+# Replace with your printer's MAC address
+PRINTER_MAC = "C8:47:8C:1E:84:AE"
+# Model type: A6, A6p, A40, etc.
+MODEL = "A6"
+
+def print_receipt(text):
+    """
+    Sends text to the PeriPage printer using the command line tool.
+    This version runs directly on the Debian Host.
+    """
+    print(f"Connecting to printer {PRINTER_MAC}...")
+    
+    # We use the 'peripage' command directly because it's in the system PATH
+    # -c 2: Concentration (Heat level)
+    # -b 100: Burn time / Break
+    command = [
+        "peripage", 
+        "-m", PRINTER_MAC, 
+        "-p", MODEL, 
+        "-t", text,
+        "-c", "2",
+        "-b", "100"
+    ]
+    
+    try:
+        # We execute the command and wait for it to finish
+        result = subprocess.run(command, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print("Successfully printed!")
+        else:
+            print("Error during printing:")
+            print(result.stderr)
+            
+    except FileNotFoundError:
+        print("Error: The 'peripage' tool is not installed on this system.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
 
     # ── Startup banner ─────────────────────────────────────────────────────
     print()
